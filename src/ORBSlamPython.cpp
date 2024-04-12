@@ -375,23 +375,26 @@ boost::python::list ORBSlamPython::getKeyframePoints() const
     vector<ORB_SLAM3::KeyFrame *> vpKFs = system->GetKeyFrames();
     std::sort(vpKFs.begin(), vpKFs.end(), ORB_SLAM3::KeyFrame::lId);
 
-    // Transform all keyframes so that the first keyframe is at the origin.
-    // After a loop closure the first keyframe might not be at the origin.
-    //cv::Mat Two = vpKFs[0]->GetPoseInverse();
 
     boost::python::list trajectory;
-
+    if(vpKFs.empty())
+    {
+        return trajectory;
+    }
+    // Transform all keyframes so that the first keyframe is at the origin.
+    // After a loop closure the first keyframe might not be at the origin.
+    cv::Mat Two = vpKFs[0]->GetPoseInverse();
     for (size_t i = 0; i < vpKFs.size(); i++)
     {
         ORB_SLAM3::KeyFrame *pKF = vpKFs[i];
 
-        // pKF->SetPose(pKF->GetPose()*Two);
+        pKF->SetPose(pKF->GetPose()*Two);
 
         if (pKF->isBad())
             continue;
 
-        cv::Mat R = pKF->GetRotation().t();
-        cv::Mat t = pKF->GetCameraCenter();
+        cv::Mat R = pKF->GetRotation();//.t();
+        cv::Mat t = pKF->GetTranslation();
         PyObject *Rarr = pbcvt::fromMatToNDArray(R);
         PyObject *Tarr = pbcvt::fromMatToNDArray(t);
         trajectory.append(boost::python::make_tuple(
