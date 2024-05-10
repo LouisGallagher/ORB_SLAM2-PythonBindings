@@ -388,13 +388,13 @@ boost::python::list ORBSlamPython::getKeyframePoints() const
     {
         ORB_SLAM3::KeyFrame *pKF = vpKFs[i];
 
-        pKF->SetPose(pKF->GetPose()*Two);
+        // pKF->SetPose(pKF->GetPose()*Two);
 
         if (pKF->isBad())
             continue;
 
-        cv::Mat R = pKF->GetRotation();//.t();
-        cv::Mat t = pKF->GetTranslation();
+        cv::Mat R = pKF->GetRotation().t();
+        cv::Mat t = pKF->GetCameraCenter();
         PyObject *Rarr = pbcvt::fromMatToNDArray(R);
         PyObject *Tarr = pbcvt::fromMatToNDArray(t);
         trajectory.append(boost::python::make_tuple(
